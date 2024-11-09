@@ -25626,6 +25626,64 @@ module.exports = {
 
 /***/ }),
 
+/***/ 2855:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.DEFAULT_INPUTS = void 0;
+exports.DEFAULT_INPUTS = {
+    milliseconds: 1000
+};
+
+
+/***/ }),
+
+/***/ 9407:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+/**
+ * The entrypoint for the action.
+ */
+/* istanbul ignore file */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const main_1 = __importDefault(__nccwpck_require__(1730));
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+(0, main_1.default)();
+
+
+/***/ }),
+
+/***/ 8422:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getInputs = getInputs;
+exports.ensureInputsValid = ensureInputsValid;
+const utility_1 = __nccwpck_require__(2143);
+const configs_1 = __nccwpck_require__(2855);
+function getInputs() {
+    return {
+        milliseconds: (0, utility_1.getNumberInputOrDefault)('milliseconds', undefined, true) ??
+            configs_1.DEFAULT_INPUTS.milliseconds
+    };
+}
+function ensureInputsValid(inputs) {
+    if (!inputs.milliseconds)
+        throw new Error("The 'milliseconds' parameter is required.");
+}
+
+
+/***/ }),
+
 /***/ 1730:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -25655,30 +25713,183 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.run = run;
+exports["default"] = run;
 const core = __importStar(__nccwpck_require__(7484));
 const wait_1 = __nccwpck_require__(910);
+const outputs_1 = __nccwpck_require__(7729);
+const inputs_1 = __nccwpck_require__(8422);
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 async function run() {
     try {
-        const ms = core.getInput('milliseconds');
-        // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-        core.debug(`Waiting ${ms} milliseconds ...`);
-        // Log the current timestamp, wait, then log the new timestamp
-        core.debug(new Date().toTimeString());
-        await (0, wait_1.wait)(parseInt(ms, 10));
-        core.debug(new Date().toTimeString());
-        // Set outputs for other workflow steps to use
-        core.setOutput('time', new Date().toTimeString());
+        await mainProcess();
+        core.debug('Operation completed successfully.');
     }
     catch (error) {
         // Fail the workflow run if an error occurs
-        if (error instanceof Error)
-            core.setFailed(error.message);
+        core.error('Operation failed.');
+        // @ts-expect-error we want catch all errors as string
+        core.setFailed(error instanceof Error ? error.message : error.toString());
     }
+}
+async function mainProcess() {
+    const inputs = (0, inputs_1.getInputs)();
+    (0, inputs_1.ensureInputsValid)(inputs);
+    core.info(`Waiting ${inputs.milliseconds} milliseconds ...`);
+    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
+    core.debug(new Date().toTimeString());
+    await (0, wait_1.wait)(inputs.milliseconds);
+    core.debug(new Date().toTimeString());
+    (0, outputs_1.setOutputs)({ time: inputs.milliseconds });
+}
+
+
+/***/ }),
+
+/***/ 7729:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.setOutputs = setOutputs;
+const core = __importStar(__nccwpck_require__(7484));
+function setOutputs(data) {
+    for (const key of Object.keys(data)) {
+        // @ts-expect-error the `data[key]` can be any type
+        core.setOutput(key, data[key]);
+    }
+}
+
+
+/***/ }),
+
+/***/ 2143:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.execBashCommand = execBashCommand;
+exports.execCommand = execCommand;
+exports.readFile = readFile;
+exports.getInputOrDefault = getInputOrDefault;
+exports.getNumberInputOrDefault = getNumberInputOrDefault;
+exports.getBooleanInputOrDefault = getBooleanInputOrDefault;
+const exec = __importStar(__nccwpck_require__(5236));
+const fs_1 = __importDefault(__nccwpck_require__(9896));
+const core = __importStar(__nccwpck_require__(7484));
+async function execBashCommand(command, errorMessage, args, options) {
+    command = command.replace(/"/g, "'");
+    command = `/bin/bash -c "${command}"`;
+    core.debug(`Execute command: ${command}`);
+    return await execCommand(command, errorMessage, args, options);
+}
+async function execCommand(command, errorMessage, args, options) {
+    core.debug(`Execute command: ${command}`);
+    try {
+        return await exec.getExecOutput(command, args, options);
+    }
+    catch (error) {
+        const title = errorMessage || `Execute '${command}' failed.`;
+        const message = error instanceof Error ? error.message : error.toString();
+        throw new Error(`${title}\n${message}`);
+    }
+}
+function readFile(fileName) {
+    core.debug(`Reading file: ${fileName}`);
+    if (!fs_1.default.existsSync(fileName)) {
+        throw new Error(`Can not find '${fileName}'.`);
+    }
+    return fs_1.default.readFileSync(fileName, 'utf8').trim();
+}
+function getInputOrDefault(name, default_value = undefined, trimWhitespace = true, required = false) {
+    const input = core.getInput(name, {
+        trimWhitespace,
+        required
+    });
+    if (!input || input === '') {
+        core.debug(`Try get ${name} but it is not provided so return default value '${default_value}'`);
+        return default_value;
+    }
+    core.debug(`${name}: ${input}`);
+    return input;
+}
+function getNumberInputOrDefault(name, default_value = undefined, required = false) {
+    const input = core.getInput(name, {
+        trimWhitespace: true,
+        required: required
+    });
+    if (!input || input === '') {
+        core.debug(`Try get ${name} but it is not provided so return default value '${default_value}'`);
+        return default_value;
+    }
+    core.debug(`${name}: ${input}`);
+    const result = parseInt(input, 10);
+    if (result)
+        return result;
+    throw new Error(`Can not convert '${input}' to number.`);
+}
+function getBooleanInputOrDefault(name, defaultValue = undefined, required = false) {
+    const input = getInputOrDefault(name, undefined, true, required)?.toLowerCase();
+    if (!input)
+        return defaultValue;
+    if (input === 'true')
+        return true;
+    if (input === 'false')
+        return false;
+    throw new TypeError(`The value of '${name}' is not valid. It must be either true or false but got '${input}'.`);
 }
 
 
@@ -27611,23 +27822,13 @@ module.exports = parseParams
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
 /******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be in strict mode.
-(() => {
-"use strict";
-var exports = __webpack_exports__;
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-/**
- * The entrypoint for the action.
- */
-const main_1 = __nccwpck_require__(1730);
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-(0, main_1.run)();
-
-})();
-
-module.exports = __webpack_exports__;
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __nccwpck_require__(9407);
+/******/ 	module.exports = __webpack_exports__;
+/******/ 	
 /******/ })()
 ;
 //# sourceMappingURL=index.js.map

@@ -1,89 +1,66 @@
-/**
- * Unit tests for the action's main functionality, src/main.ts
- *
- * These should be run as if the action was called from a workflow.
- * Specifically, the inputs listed in `action.yml` should be set as environment
- * variables following the pattern `INPUT_<INPUT_NAME>`.
- */
-
+import run from '../src/main'
 import * as core from '@actions/core'
-import * as main from '../src/main'
+import { mockGetInput } from './mocks.utility'
 
-// Mock the action's main function
-const runMock = jest.spyOn(main, 'run')
+jest.mock('@actions/core')
 
-// Other utilities
-const timeRegex = /^\d{2}:\d{2}:\d{2}/
-
-// Mock the GitHub Actions core library
-let debugMock: jest.SpiedFunction<typeof core.debug>
-let errorMock: jest.SpiedFunction<typeof core.error>
-let getInputMock: jest.SpiedFunction<typeof core.getInput>
-let setFailedMock: jest.SpiedFunction<typeof core.setFailed>
-let setOutputMock: jest.SpiedFunction<typeof core.setOutput>
-
-describe('action', () => {
+describe('run', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
-
-    debugMock = jest.spyOn(core, 'debug').mockImplementation()
-    errorMock = jest.spyOn(core, 'error').mockImplementation()
-    getInputMock = jest.spyOn(core, 'getInput').mockImplementation()
-    setFailedMock = jest.spyOn(core, 'setFailed').mockImplementation()
-    setOutputMock = jest.spyOn(core, 'setOutput').mockImplementation()
+    jest.resetAllMocks()
   })
 
-  it('sets the time output', async () => {
-    // Set the action's inputs as return values from core.getInput()
-    getInputMock.mockImplementation(name => {
-      switch (name) {
-        case 'milliseconds':
-          return '500'
-        default:
-          return ''
-      }
-    })
+  it('should process and set output', async () => {
+    // Arrange
+    const infoMock = jest.spyOn(core, 'info')
+    const setOutputMock = jest.spyOn(core, 'setOutput')
+    const errorMock = jest.spyOn(core, 'error')
+    const setFailedMock = jest.spyOn(core, 'setFailed')
 
-    await main.run()
-    expect(runMock).toHaveReturned()
+    const milliseconds = 10
+    jest
+      .spyOn(core, 'getInput')
+      .mockImplementation((name: string, options?: core.InputOptions) =>
+        mockGetInput(name, { milliseconds: `${milliseconds}` }, options)
+      )
 
-    // Verify that all of the core library functions were called correctly
-    expect(debugMock).toHaveBeenNthCalledWith(1, 'Waiting 500 milliseconds ...')
-    expect(debugMock).toHaveBeenNthCalledWith(
-      2,
-      expect.stringMatching(timeRegex)
+    // Act
+    await run()
+
+    // Assert
+    expect(infoMock).toHaveBeenCalledWith(
+      `Waiting ${milliseconds} milliseconds ...`
     )
-    expect(debugMock).toHaveBeenNthCalledWith(
-      3,
-      expect.stringMatching(timeRegex)
-    )
-    expect(setOutputMock).toHaveBeenNthCalledWith(
-      1,
-      'time',
-      expect.stringMatching(timeRegex)
-    )
+    expect(setOutputMock).toHaveBeenCalledWith('time', milliseconds)
+
     expect(errorMock).not.toHaveBeenCalled()
+    expect(setFailedMock).not.toHaveBeenCalled()
   })
 
-  it('sets a failed status', async () => {
-    // Set the action's inputs as return values from core.getInput()
-    getInputMock.mockImplementation(name => {
-      switch (name) {
-        case 'milliseconds':
-          return 'this is not a number'
-        default:
-          return ''
-      }
-    })
+  it('must getInputs fails and error catch', async () => {
+    // Arrange
+    const debugMock = jest.spyOn(core, 'debug')
+    const infoMock = jest.spyOn(core, 'info')
+    const setOutputMock = jest.spyOn(core, 'setOutput')
+    const errorMock = jest.spyOn(core, 'error')
+    const setFailedMock = jest.spyOn(core, 'setFailed')
 
-    await main.run()
-    expect(runMock).toHaveReturned()
+    jest
+      .spyOn(core, 'getInput')
+      .mockImplementation((name: string, options?: core.InputOptions) =>
+        mockGetInput(name, { milliseconds: '' }, options)
+      )
 
-    // Verify that all of the core library functions were called correctly
-    expect(setFailedMock).toHaveBeenNthCalledWith(
-      1,
-      'milliseconds not a number'
+    // Act
+    await run()
+
+    // Assert
+    expect(debugMock).not.toHaveBeenCalled()
+    expect(infoMock).not.toHaveBeenCalled()
+    expect(setOutputMock).not.toHaveBeenCalled()
+
+    expect(errorMock).toHaveBeenCalledWith('Operation failed.')
+    expect(setFailedMock).toHaveBeenCalledWith(
+      'Input required and not supplied: milliseconds'
     )
-    expect(errorMock).not.toHaveBeenCalled()
   })
 })
