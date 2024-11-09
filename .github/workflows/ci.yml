@@ -72,5 +72,5 @@ jobs:
           inputs: |
             - name: test output time
               type: Equals
-              expected: '2000'
+              expected: 2000
               actual: ${{ steps.test-action.outputs.time }}
