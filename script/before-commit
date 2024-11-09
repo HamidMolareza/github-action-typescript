@@ -1,4 +1,6 @@
 #!/bin/bash
 
-npm run format:write && npm run lint
-exit $?
+set -e
+
+npm run format:write
+npm run lint
