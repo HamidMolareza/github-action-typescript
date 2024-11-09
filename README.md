@@ -204,7 +204,8 @@ steps:
 ```
 
 For example workflow runs, check out the
-[Actions tab](https://github.com/HamidMolareza/github-action-typescript/actions)! :rocket:
+[Actions tab](https://github.com/HamidMolareza/github-action-typescript/actions)!
+:rocket:
 
 ## Usage
 
