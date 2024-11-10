@@ -1,6 +1,6 @@
 import run from '../src/main'
 import * as core from '@actions/core'
-import { mockGetInput } from './mocks.utility'
+import { AppInputNames, mockGetInput } from './mocks.utility'
 
 jest.mock('@actions/core')
 
@@ -20,7 +20,11 @@ describe('run', () => {
     jest
       .spyOn(core, 'getInput')
       .mockImplementation((name: string, options?: core.InputOptions) =>
-        mockGetInput(name, { milliseconds: `${milliseconds}` }, options)
+        mockGetInput(
+          name,
+          [{ name: AppInputNames.milliseconds, givenValue: milliseconds }],
+          options
+        )
       )
 
     // Act
@@ -47,7 +51,11 @@ describe('run', () => {
     jest
       .spyOn(core, 'getInput')
       .mockImplementation((name: string, options?: core.InputOptions) =>
-        mockGetInput(name, { milliseconds: '' }, options)
+        mockGetInput(
+          name,
+          [{ name: AppInputNames.milliseconds, givenValue: `` }],
+          options
+        )
       )
 
     // Act

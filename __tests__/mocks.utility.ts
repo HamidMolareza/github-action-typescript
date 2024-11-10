@@ -1,6 +1,10 @@
 import * as exec from '@actions/exec'
 import * as core from '@actions/core'
 
+export const AppInputNames = {
+  milliseconds: 'milliseconds'
+}
+
 export interface IExpectedCommand {
   command: string
   success: boolean
@@ -32,17 +36,42 @@ export function mockGetExecOutput(
   })
 }
 
+export interface IInputMock {
+  name: string
+  givenValue?: string | boolean | number
+  defaultValue?: string
+}
+
 export function mockGetInput(
   name: string,
-  inputs: { [key: string]: any },
+  mockInputs: IInputMock[],
   options?: core.InputOptions
 ): string {
   name = name.toLowerCase()
-  const targetName = Object.keys(inputs).find(key => key.toLowerCase() == name)
-  let result: string = targetName ? inputs[targetName] : ''
+  const targetMock = mockInputs.find(
+    mockInput => mockInput.name.toLowerCase() == name
+  )
 
-  if (options && options.required && !result)
-    throw new Error(`Input required and not supplied: ${name}`)
-  if (options && options.trimWhitespace) result = result.toString().trim()
+  let result = ''
+  if (targetMock) {
+    result = targetMock.givenValue
+      ? targetMock.givenValue.toString()
+      : (targetMock.defaultValue ?? '')
+  }
+
+  if (options) {
+    if (options.required && !result)
+      throw new Error(`Input required and not supplied: ${name}`)
+    if (result && options.trimWhitespace) result = result.trim()
+  }
+
   return result
+}
+
+export function mockSetOutput(
+  name: string,
+  value: any,
+  output: { [key: string]: any }
+): void {
+  output[name] = value
 }

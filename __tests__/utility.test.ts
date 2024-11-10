@@ -148,7 +148,11 @@ describe('getInputOrDefault', () => {
     jest
       .spyOn(core, 'getInput')
       .mockImplementation((name: string, options?: core.InputOptions) =>
-        mockGetInput(name, { test: 'test-value' }, options)
+        mockGetInput(
+          name,
+          [{ name: 'test', givenValue: `test-value` }],
+          options
+        )
       )
 
     const input = getInputOrDefault('test', 'default')
@@ -160,7 +164,7 @@ describe('getInputOrDefault', () => {
     jest
       .spyOn(core, 'getInput')
       .mockImplementation((name: string, options?: core.InputOptions) =>
-        mockGetInput(name, [{ key: 'test', value: '' }], options)
+        mockGetInput(name, [{ name: 'test', givenValue: `` }], options)
       )
 
     const input = getInputOrDefault('test', 'default')
@@ -180,7 +184,7 @@ describe('getBooleanInputOrDefault', () => {
     jest
       .spyOn(core, 'getInput')
       .mockImplementation((name: string, options?: core.InputOptions) =>
-        mockGetInput(name, [{ key: 'test', value: '' }], options)
+        mockGetInput(name, [{ name: 'test', givenValue: `` }], options)
       )
 
     const input = getBooleanInputOrDefault('test', true)
@@ -194,10 +198,10 @@ describe('getBooleanInputOrDefault', () => {
       .mockImplementation((name: string, options?: core.InputOptions) =>
         mockGetInput(
           name,
-          {
-            test1: 'true',
-            test2: 'TruE'
-          },
+          [
+            { name: 'test1', givenValue: `true` },
+            { name: 'test2', givenValue: `TrUe` }
+          ],
           options
         )
       )
@@ -213,7 +217,14 @@ describe('getBooleanInputOrDefault', () => {
     jest
       .spyOn(core, 'getInput')
       .mockImplementation((name: string, options?: core.InputOptions) =>
-        mockGetInput(name, { test1: 'false', test2: 'fALsE' }, options)
+        mockGetInput(
+          name,
+          [
+            { name: 'test1', givenValue: `false` },
+            { name: 'test2', givenValue: `FalSE` }
+          ],
+          options
+        )
       )
 
     let input = getBooleanInputOrDefault('test1', true)
@@ -227,7 +238,14 @@ describe('getBooleanInputOrDefault', () => {
     jest
       .spyOn(core, 'getInput')
       .mockImplementation((name: string, options?: core.InputOptions) =>
-        mockGetInput(name, { test1: 'false', test2: 'invalid' }, options)
+        mockGetInput(
+          name,
+          [
+            { name: 'test1', givenValue: `false` },
+            { name: 'test2', givenValue: `invalid` }
+          ],
+          options
+        )
       )
 
     expect(() => getBooleanInputOrDefault('test2', true)).toThrow(
@@ -247,7 +265,7 @@ describe('getNumberInputOrDefault', () => {
     jest
       .spyOn(core, 'getInput')
       .mockImplementation((name: string, options?: core.InputOptions) =>
-        mockGetInput(name, [{ key: 'test', value: '' }], options)
+        mockGetInput(name, [{ name: 'test', givenValue: `` }], options)
       )
 
     const expected = 10
@@ -260,7 +278,11 @@ describe('getNumberInputOrDefault', () => {
     jest
       .spyOn(core, 'getInput')
       .mockImplementation((name: string, options?: core.InputOptions) =>
-        mockGetInput(name, { test: ' 10  ' }, options)
+        mockGetInput(
+          name,
+          [{ name: 'test', givenValue: `    10    ` }],
+          options
+        )
       )
 
     const input = getNumberInputOrDefault('test')
@@ -271,7 +293,7 @@ describe('getNumberInputOrDefault', () => {
     jest
       .spyOn(core, 'getInput')
       .mockImplementation((name: string, options?: core.InputOptions) =>
-        mockGetInput(name, { test: 'abc' }, options)
+        mockGetInput(name, [{ name: 'test', givenValue: `abc` }], options)
       )
 
     expect(() => getNumberInputOrDefault('test', 10)).toThrow(
